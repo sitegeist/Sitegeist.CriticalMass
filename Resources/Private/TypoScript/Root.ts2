@@ -1,0 +1,18 @@
+prototype(TYPO3.Neos:Page) {
+
+  /**
+   * Wire the backend Assets
+   */
+  head.sitegeistCriticalMassHeader = TYPO3.TypoScript:Template {
+    @position = 'after sitegeistNeosBackendBridgeHeader'
+    templatePath = 'resource://Sitegeist.CriticalMass/Private/Templates/TypoScriptObjects/BackendHeader.html'
+
+    @cache {
+      mode = 'uncached'
+      context {
+        1 = 'node'
+      }
+    }
+    @if.onlyRenderWhenNotInLiveWorkspace = ${documentNode.context.inBackend}
+  }
+}
