@@ -3,3 +3,9 @@ TYPO3:
     typoScript:
       autoInclude:
         'Sitegeist.CriticalMass': TRUE
+    userInterface:
+      navigateComponent:
+        nodeTree:
+          presets:
+            default:
+              baseNodeType: 'Sitegeist.CriticalMass:PageTreeMixin'
