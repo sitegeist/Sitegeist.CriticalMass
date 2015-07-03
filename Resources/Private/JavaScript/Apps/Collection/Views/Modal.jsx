@@ -9,12 +9,13 @@ class ModalView extends React.Component {
   }
 
   render() {
-    return <div class="sgcm-createNodePrompt">
-      <input type="text" name="title" placeholder="Enter title..." onChange={this.handleChange} />
+    return <div className="sgcm-createNodePrompt u-cf">
+      Please Enter a title for your new entry.
+      <input className="sgbtextInput" type="text" name="title" placeholder="Enter title..." onChange={this.handleChange} />
 
       <footer>
-        <button class="btn" onClick={this.handleCancel}>Cancel</button>
-        <button class="btn" onClick={this.handleSave}>Save</button>
+        <button className="sgbbtn sgbbtn--positive u-floatRight" onClick={this.handleSave}>Save</button>
+        <button className="sgbbtn u-floatLeft" onClick={this.handleCancel}>Cancel</button>
       </footer>
     </div>;
   }
@@ -25,10 +26,6 @@ class ModalView extends React.Component {
     };
   }
 
-  setPromise(promise) {
-    this.setProps({ promise });
-  }
-
   handleChange(event) {
     this.setState({
       title: event.target.value
@@ -36,11 +33,11 @@ class ModalView extends React.Component {
   }
 
   handleCancel() {
-    this.props.promise.reject();
+    this.props.deferred.reject();
   }
 
   handleSave() {
-    this.props.promise.resolve(this.state);
+    this.props.deferred.resolve(this.state);
   }
 }
 

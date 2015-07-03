@@ -7,6 +7,5 @@ let appParser = new ComponentDomParser({
   }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-  appParser.parse();
-});
+document.addEventListener('DOMContentLoaded', () => appParser.parse());
+document.addEventListener('Neos.PageLoaded', () => appParser.parse());

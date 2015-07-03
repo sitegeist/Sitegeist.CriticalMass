@@ -21,8 +21,8 @@ class FooterPanelView extends React.Component {
    * @return {DOMElement}
    */
   render() {
-    return <button onClick={this.handleClickOnCreate}>
-      Create New Entry
+    return <button className="sgbbtn neos" onClick={this.handleClickOnCreate}>
+      <i className="icon icon-plus"></i> Create New Entry
     </button>
   }
 

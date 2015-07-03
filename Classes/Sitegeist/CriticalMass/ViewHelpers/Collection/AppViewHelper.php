@@ -37,7 +37,7 @@ class AppViewHelper extends \Sitegeist\CriticalMass\ViewHelpers\AbstractApplicat
    * @param \TYPO3\TYPO3CR\Domain\Model\NodeInterface $referenceNode
 	 * @return string
 	 */
-	public function render($nodeType = '', $referenceNode = NULL) {
+	public function render($nodeType = '', $referenceNode = NULL, $insertPosition = 'into') {
     if ($referenceNode !== NULL && !$referenceNode instanceof \TYPO3\TYPO3CR\Domain\Model\NodeInterface) {
       throw new \IllegalArgumentException('referenceNode must be of Type \TYPO3\TYPO3CR\Domain\Model\NodeInterface',
         1435571225);
@@ -60,8 +60,13 @@ class AppViewHelper extends \Sitegeist\CriticalMass\ViewHelpers\AbstractApplicat
       $contents.= (NULL !== $referenceNode) ?
         sprintf('<input type="hidden" data-namespace="%s" data-key="referenceNode" value="%s">',
           self::LIST_APPLICATION_NAME,
-          $referenceNode->getPath()
+          $referenceNode->getContextPath()
       ) : '';
+
+      $contents.= sprintf('<input type="hidden" data-namespace="%s" data-key="insertPosition" value="%s">',
+        self::LIST_APPLICATION_NAME,
+        $insertPosition
+      );
 
       $contents.= $this->renderChildren();
       return $this->wrapApplicationUserInterface(self::LIST_APPLICATION_NAME, $contents);
