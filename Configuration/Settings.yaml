@@ -11,11 +11,8 @@ TYPO3:
               baseNodeType: 'Sitegeist.CriticalMass:PageTreeMixin'
 
 Sitegeist:
-
   CriticalMass:
-
     automaticNodeHirarchy:
-
 #      'Sitegeist.CriticalMass:ExampleNode':
 #        root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleCollection]').slice(-1, 1).get(0)}"
 #        path:

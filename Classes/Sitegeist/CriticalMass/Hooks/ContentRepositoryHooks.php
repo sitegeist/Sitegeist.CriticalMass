@@ -27,6 +27,15 @@ class ContentRepositoryHooks {
     protected $eelEvaluator;
 
     /**
+     * The flash messages. Use $this->flashMessageContainer->addMessage(...) to add a new Flash
+     * Message.
+     *
+     * @Flow\Inject
+     * @var \TYPO3\Flow\Mvc\FlashMessageContainer
+     */
+    protected $flashMessageContainer;
+
+    /**
      * @var array
      * @Flow\InjectConfiguration("automaticNodeHirarchy")
      */
@@ -36,79 +45,99 @@ class ContentRepositoryHooks {
      * @param NodeInterface $node
      */
     public function nodeCreated (NodeInterface $node) {
-        $this->handleAutomaticHirarchiesForNewNodes($node);
+        $this->handleAutomaticHirarchiesForNodes($node);
     }
 
     /**
      * @param NodeInterface $node
      */
     public function nodeUpdated (NodeInterface $node) {
-        $this->handleAutomaticHirarchiesForNewNodes($node);
+        $this->handleAutomaticHirarchiesForNodes($node);
     }
 
 
     /**
      * @param NodeInterface $node
      */
-    protected function handleAutomaticHirarchiesForNewNodes (NodeInterface $node) {
-
+    protected function handleAutomaticHirarchiesForNodes (NodeInterface $node) {
         if (is_array($this->automaticNodeHirarchyConfigurations)) {
             foreach ($this->automaticNodeHirarchyConfigurations as $nodeType => $hirarchyConfiguration) {
-                $this->handleAutomaticHirarchyForNodeType($nodeType, $hirarchyConfiguration, $node);
+                if ($node->getNodeType()->getName() === $nodeType) {
+                    $this->handleAutomaticHirarchyForNodeType($node, $hirarchyConfiguration);
+                }
             }
         }
     }
 
     /**
      * @param $nodeType
-     * @param $hirarchyConfiguration
+     * @param $configuration
      * @param NodeInterface $node
      */
-    protected function handleAutomaticHirarchyForNodeType($nodeType, $hirarchyConfiguration, NodeInterface $node) {
-        if ($node->getNodeType()->getName() === $nodeType) {
-            // find collection root
-            $collectionRoot = Utility::evaluateEelExpression($hirarchyConfiguration['root'], $this->eelEvaluator, array('node' => $node));
-            if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
-                $collectionNode = $collectionRoot;
+    protected function handleAutomaticHirarchyForNodeType(NodeInterface $node, $configuration) {
 
-                // traverse path and move node
-                foreach ($hirarchyConfiguration['path'] as $pathItem) {
-                    $expectedNodeProperties = array();
-                    foreach ($pathItem['properties'] as $propertyName => $propertyEelExpression) {
-                        $expectedNodeProperties[$propertyName] = Utility::evaluateEelExpression($propertyEelExpression, $this->eelEvaluator, array('node' => $node));
-                    }
+        // find collection root
+        $collectionRoot = Utility::evaluateEelExpression($configuration['root'], $this->eelEvaluator, array('node' => $node));
+        if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
 
-                    xdebug_break();
+            $targetCollectionNode = $collectionRoot;
+            $collectionPath = array($targetCollectionNode);
 
-                    if (!$expectedNodeProperties['title'] && !$expectedNodeProperties['uriPathSegment']) {
-                        continue;
-                    }
-
-                    // find next path collectionNodes
-
-                    $flowQuery = new FlowQuery(array($collectionNode));
-                    $flowQuery = $flowQuery->children('[instanceof ' . $pathItem['type'] . ']');
-                    foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
-                        $flowQuery = $flowQuery->filter('[' . $expectedPropertyName . '="' . $expectedPropertyValue . '"]');
-                    }
-                    $nextCollectionNode = $flowQuery->get(0);
-
-                    // create missing collectionNodes
-
-                    if (!$nextCollectionNode) {
-                        $nextCollectionNodeType = $this->nodeTypeManager->getNodeType($pathItem['type']);
-                        $nextCollectionNode = $collectionNode->createNode(strtolower($expectedNodeProperties['title']), $nextCollectionNodeType);
-                        foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
-                            $nextCollectionNode->setProperty($expectedPropertyName, $expectedPropertyValue);
-                        }
-                    }
-
-                    $collectionNode = $nextCollectionNode;
+            // traverse path and move node
+            foreach ($configuration['path'] as $pathItem) {
+                $expectedNodeProperties = array();
+                foreach ($pathItem['properties'] as $propertyName => $propertyEelExpression) {
+                    $expectedNodeProperties[$propertyName] = Utility::evaluateEelExpression($propertyEelExpression, $this->eelEvaluator, array('node' => $node));
                 }
 
-                // move node into the last collection node
-                $node->moveInto($collectionNode);
+                if (!$expectedNodeProperties['title'] && !$expectedNodeProperties['uriPathSegment']) {
+                    continue;
+                }
+
+                // find next path collectionNodes
+
+                $flowQuery = new FlowQuery(array($targetCollectionNode));
+                $flowQuery = $flowQuery->children('[instanceof ' . $pathItem['type'] . ']');
+                foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
+                    $flowQuery = $flowQuery->filter('[' . $expectedPropertyName . '="' . $expectedPropertyValue . '"]');
+                }
+                $nextCollectionNode = $flowQuery->get(0);
+
+                // create missing collectionNodes
+
+                if (!$nextCollectionNode) {
+                    $nextCollectionNodeType = $this->nodeTypeManager->getNodeType($pathItem['type']);
+                    $nextCollectionNode = $targetCollectionNode->createNode(strtolower($expectedNodeProperties['title']), $nextCollectionNodeType);
+                    foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
+                        $nextCollectionNode->setProperty($expectedPropertyName, $expectedPropertyValue);
+                    }
+                }
+
+                $targetCollectionNode = $nextCollectionNode;
+                $collectionPath[] = $targetCollectionNode;
             }
+
+            if ($targetCollectionNode != $node->getParent()) {
+                // create flash message
+                $pathInfo = '';
+                foreach ($collectionPath as $collectionPathNode) {
+                    /**
+                     * @var NodeInterface $collectionPathNode
+                     */
+                    $pathInfo .= '/' . $collectionPathNode->getProperty('title');
+                }
+
+                $message = new \TYPO3\Flow\Error\Message('Moved node to path :' . $pathInfo);
+                $this->flashMessageContainer->addMessage($message);
+
+                // move node into to the target
+                $node->moveInto($targetCollectionNode);
+            } else {
+                $this->flashMessageContainer->addMessage(new \TYPO3\Flow\Error\Message('nothing to do'));
+            }
+        } else {
+            $this->flashMessageContainer->addMessage(new \TYPO3\Flow\Error\Message('no collection found'));
         }
+
     }
 }
