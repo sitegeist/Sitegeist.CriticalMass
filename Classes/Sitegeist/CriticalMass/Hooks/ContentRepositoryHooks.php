@@ -5,7 +5,7 @@ namespace Sitegeist\CriticalMass\Hooks;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 
-use TYPO3\Eel\Utility;
+use TYPO3\Eel\Utility as EelUtility;
 use TYPO3\Eel\CompilingEvaluator;
 use TYPO3\Eel\FlowQuery\FlowQuery;
 
@@ -27,13 +27,10 @@ class ContentRepositoryHooks {
     protected $eelEvaluator;
 
     /**
-     * The flash messages. Use $this->flashMessageContainer->addMessage(...) to add a new Flash
-     * Message.
-     *
      * @Flow\Inject
-     * @var \TYPO3\Flow\Mvc\FlashMessageContainer
+     * @var \TYPO3\Flow\Configuration\ConfigurationManager
      */
-    protected $flashMessageContainer;
+    protected $configurationManager;
 
     /**
      * @var array
@@ -76,8 +73,11 @@ class ContentRepositoryHooks {
      */
     protected function handleAutomaticHirarchyForNodeType(NodeInterface $node, $configuration) {
 
+        $defaultTypoScriptContextConfiguration = $this->configurationManager->getConfiguration('Settings', 'Sitegeist.CriticalMass.eelContext');
+        $defaultTypoScriptContext = EelUtility::getDefaultContextVariables($defaultTypoScriptContextConfiguration);
+
         // find collection root
-        $collectionRoot = Utility::evaluateEelExpression($configuration['root'], $this->eelEvaluator, array('node' => $node));
+        $collectionRoot = EelUtility::evaluateEelExpression($configuration['root'], $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
         if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
 
             $targetCollectionNode = $collectionRoot;
@@ -87,7 +87,7 @@ class ContentRepositoryHooks {
             foreach ($configuration['path'] as $pathItem) {
                 $expectedNodeProperties = array();
                 foreach ($pathItem['properties'] as $propertyName => $propertyEelExpression) {
-                    $expectedNodeProperties[$propertyName] = Utility::evaluateEelExpression($propertyEelExpression, $this->eelEvaluator, array('node' => $node));
+                    $expectedNodeProperties[$propertyName] = EelUtility::evaluateEelExpression($propertyEelExpression, $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
                 }
 
                 if (!$expectedNodeProperties['title'] && !$expectedNodeProperties['uriPathSegment']) {
@@ -95,7 +95,6 @@ class ContentRepositoryHooks {
                 }
 
                 // find next path collectionNodes
-
                 $flowQuery = new FlowQuery(array($targetCollectionNode));
                 $flowQuery = $flowQuery->children('[instanceof ' . $pathItem['type'] . ']');
                 foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
@@ -104,7 +103,6 @@ class ContentRepositoryHooks {
                 $nextCollectionNode = $flowQuery->get(0);
 
                 // create missing collectionNodes
-
                 if (!$nextCollectionNode) {
                     $nextCollectionNodeType = $this->nodeTypeManager->getNodeType($pathItem['type']);
                     $nextCollectionNode = $targetCollectionNode->createNode(strtolower($expectedNodeProperties['title']), $nextCollectionNodeType);
@@ -118,25 +116,9 @@ class ContentRepositoryHooks {
             }
 
             if ($targetCollectionNode != $node->getParent()) {
-                // create flash message
-                $pathInfo = '';
-                foreach ($collectionPath as $collectionPathNode) {
-                    /**
-                     * @var NodeInterface $collectionPathNode
-                     */
-                    $pathInfo .= '/' . $collectionPathNode->getProperty('title');
-                }
-
-                $message = new \TYPO3\Flow\Error\Message('Moved node to path :' . $pathInfo);
-                $this->flashMessageContainer->addMessage($message);
-
                 // move node into to the target
                 $node->moveInto($targetCollectionNode);
-            } else {
-                $this->flashMessageContainer->addMessage(new \TYPO3\Flow\Error\Message('nothing to do'));
             }
-        } else {
-            $this->flashMessageContainer->addMessage(new \TYPO3\Flow\Error\Message('no collection found'));
         }
 
     }
