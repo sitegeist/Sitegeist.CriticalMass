@@ -25,17 +25,19 @@ Sitegeist:
       Type: 'TYPO3\Eel\Helper\TypeHelper'
       I18n: 'TYPO3\Flow\I18n\EelHelper\TranslationHelper'
 
-    automaticNodeHirarchy:
+    automaticNodeHierarchy:
 #      'Sitegeist.CriticalMass:ExampleNode':
-#        root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleCollection]').slice(-1, 1).get(0)}"
+#        root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection]').slice(-1, 1).get(0)}"
 #        path:
 #          -
-#            type: "Sitegeist.CriticalMass:ExampleCollection"
+#            name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
+#            type: "${'Sitegeist.CriticalMass:ExampleNodeCollection'}"
 #            properties:
-#              title: "${Date.year(q(node).property('date'))}"
-#              uriPathSegment: "${Date.year(q(node).property('date'))}"
+#              title: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
+#              uriPathSegment: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
 #          -
-#            type: "Sitegeist.CriticalMass:ExampleCollection"
+#            name: "${'node-event-month-' + (q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month')}"
+#            type: "${'Sitegeist.CriticalMass:ExampleNodeCollection'}"
 #            properties:
-#              title: "${Date.year(q(node).property('date'))}"
-#              uriPathSegment: "${Date.month(q(node).property('date'))}"
+#              title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+#              uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"

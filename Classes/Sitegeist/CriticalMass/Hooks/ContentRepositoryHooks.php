@@ -5,9 +5,9 @@ namespace Sitegeist\CriticalMass\Hooks;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 
+use TYPO3\TYPO3CR\Utility as CrUtility;
 use TYPO3\Eel\Utility as EelUtility;
 use TYPO3\Eel\CompilingEvaluator;
-use TYPO3\Eel\FlowQuery\FlowQuery;
 
 /**
  * @Flow\Scope("singleton")
@@ -34,9 +34,9 @@ class ContentRepositoryHooks {
 
     /**
      * @var array
-     * @Flow\InjectConfiguration("automaticNodeHirarchy")
+     * @Flow\InjectConfiguration("automaticNodeHierarchy")
      */
-    protected $automaticNodeHirarchyConfigurations;
+    protected $automaticNodeHierarchyConfigurations;
 
     /**
      * @param NodeInterface $node
@@ -52,15 +52,14 @@ class ContentRepositoryHooks {
         $this->handleAutomaticHirarchiesForNodes($node);
     }
 
-
     /**
      * @param NodeInterface $node
      */
     protected function handleAutomaticHirarchiesForNodes (NodeInterface $node) {
-        if (is_array($this->automaticNodeHirarchyConfigurations)) {
-            foreach ($this->automaticNodeHirarchyConfigurations as $nodeType => $hirarchyConfiguration) {
-                if ($node->getNodeType()->getName() === $nodeType) {
-                    $this->handleAutomaticHirarchyForNodeType($node, $hirarchyConfiguration);
+        if (is_array($this->automaticNodeHierarchyConfigurations)) {
+            foreach ($this->automaticNodeHierarchyConfigurations as $nodeType => $hierarchyConfiguration) {
+                if ($node->getNodeType()->isOfType($nodeType)) {
+                    $this->handleAutomaticHierarchyForNodeType($node, $hierarchyConfiguration);
                 }
             }
         }
@@ -71,7 +70,7 @@ class ContentRepositoryHooks {
      * @param $configuration
      * @param NodeInterface $node
      */
-    protected function handleAutomaticHirarchyForNodeType(NodeInterface $node, $configuration) {
+    protected function handleAutomaticHierarchyForNodeType(NodeInterface $node, $configuration) {
 
         $defaultTypoScriptContextConfiguration = $this->configurationManager->getConfiguration('Settings', 'Sitegeist.CriticalMass.eelContext');
         $defaultTypoScriptContext = EelUtility::getDefaultContextVariables($defaultTypoScriptContextConfiguration);
@@ -84,30 +83,34 @@ class ContentRepositoryHooks {
             $collectionPath = array($targetCollectionNode);
 
             // traverse path and move node
-            foreach ($configuration['path'] as $pathItem) {
-                $expectedNodeProperties = array();
-                foreach ($pathItem['properties'] as $propertyName => $propertyEelExpression) {
-                    $expectedNodeProperties[$propertyName] = EelUtility::evaluateEelExpression($propertyEelExpression, $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
-                }
+            foreach ($configuration['path'] as $pathItemConfiguration) {
+                $pathItemTypeConfiguration = EelUtility::evaluateEelExpression($pathItemConfiguration['type'], $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
+                $pathItemNameConfiguration = EelUtility::evaluateEelExpression($pathItemConfiguration['name'], $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
 
-                if (!$expectedNodeProperties['title'] && !$expectedNodeProperties['uriPathSegment']) {
+                $pathItemName = CrUtility::renderValidNodeName($pathItemNameConfiguration);
+                $pathItemNodeType = $this->nodeTypeManager->getNodeType($pathItemTypeConfiguration);
+
+                if (!$pathItemNodeType || !$pathItemName){
                     continue;
                 }
 
                 // find next path collectionNodes
-                $flowQuery = new FlowQuery(array($targetCollectionNode));
-                $flowQuery = $flowQuery->children('[instanceof ' . $pathItem['type'] . ']');
-                foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
-                    $flowQuery = $flowQuery->filter('[' . $expectedPropertyName . '="' . $expectedPropertyValue . '"]');
+                $childNodes = $targetCollectionNode->getChildNodes();
+                $nextCollectionNode = NULL;
+                foreach($childNodes as $childNode) {
+                   if ($childNode->getNodeType() == $pathItemNodeType && $childNode->getNodeData()->getName() == $pathItemName) {
+                       $nextCollectionNode = $childNode;
+                   }
                 }
-                $nextCollectionNode = $flowQuery->get(0);
 
                 // create missing collectionNodes
                 if (!$nextCollectionNode) {
-                    $nextCollectionNodeType = $this->nodeTypeManager->getNodeType($pathItem['type']);
-                    $nextCollectionNode = $targetCollectionNode->createNode(strtolower($expectedNodeProperties['title']), $nextCollectionNodeType);
-                    foreach ($expectedNodeProperties as $expectedPropertyName => $expectedPropertyValue) {
-                        $nextCollectionNode->setProperty($expectedPropertyName, $expectedPropertyValue);
+                    $nextCollectionNode = $targetCollectionNode->createNode($pathItemName, $pathItemNodeType);
+                    if ($pathItemConfiguration['properties']) {
+                        foreach ($pathItemConfiguration['properties'] as $propertyName => $propertyEelExpression) {
+                            $propertyValue = EelUtility::evaluateEelExpression($propertyEelExpression,  $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
+                            $nextCollectionNode->setProperty($propertyName, $propertyValue);
+                        }
                     }
                 }
 
@@ -120,6 +123,5 @@ class ContentRepositoryHooks {
                 $node->moveInto($targetCollectionNode);
             }
         }
-
     }
 }
