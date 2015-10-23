@@ -9,6 +9,8 @@ use TYPO3\TYPO3CR\Utility as CrUtility;
 use TYPO3\Eel\Utility as EelUtility;
 use TYPO3\Eel\CompilingEvaluator;
 
+use TYPO3\Eel\FlowQuery\FlowQuery as FlowQuery;
+
 /**
  * @Flow\Scope("singleton")
  */
@@ -71,12 +73,14 @@ class ContentRepositoryHooks {
      * @param NodeInterface $node
      */
     protected function handleAutomaticHierarchyForNodeType(NodeInterface $node, $configuration) {
+        $documentNode = (new FlowQuery(array($node)))->closest('[instanceof TYPO3.Neos:Document]')->get(0);
+        $site = (new FlowQuery(array($node)))->parents('[instanceof TYPO3.Neos:Document]')->slice(-1,1)->get(0);
 
         $defaultTypoScriptContextConfiguration = $this->configurationManager->getConfiguration('Settings', 'Sitegeist.CriticalMass.eelContext');
         $defaultTypoScriptContext = EelUtility::getDefaultContextVariables($defaultTypoScriptContextConfiguration);
 
         // find collection root
-        $collectionRoot = EelUtility::evaluateEelExpression($configuration['root'], $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
+        $collectionRoot = $this->evaluateExpression($configuration['root'], $node, $documentNode, $site, $defaultTypoScriptContext);
         if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
 
             $targetCollectionNode = $collectionRoot;
@@ -84,8 +88,8 @@ class ContentRepositoryHooks {
 
             // traverse path and move node
             foreach ($configuration['path'] as $pathItemConfiguration) {
-                $pathItemTypeConfiguration = EelUtility::evaluateEelExpression($pathItemConfiguration['type'], $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
-                $pathItemNameConfiguration = EelUtility::evaluateEelExpression($pathItemConfiguration['name'], $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
+                $pathItemTypeConfiguration = $this->evaluateExpression($pathItemConfiguration['type'], $node, $documentNode, $site, $defaultTypoScriptContext);
+                $pathItemNameConfiguration = $this->evaluateExpression($pathItemConfiguration['name'], $node, $documentNode, $site, $defaultTypoScriptContext);
 
                 $pathItemName = CrUtility::renderValidNodeName($pathItemNameConfiguration);
                 $pathItemNodeType = $this->nodeTypeManager->getNodeType($pathItemTypeConfiguration);
@@ -108,7 +112,7 @@ class ContentRepositoryHooks {
                     $nextCollectionNode = $targetCollectionNode->createNode($pathItemName, $pathItemNodeType);
                     if ($pathItemConfiguration['properties']) {
                         foreach ($pathItemConfiguration['properties'] as $propertyName => $propertyEelExpression) {
-                            $propertyValue = EelUtility::evaluateEelExpression($propertyEelExpression,  $this->eelEvaluator, array('node' => $node), $defaultTypoScriptContext);
+                            $propertyValue = $this->evaluateExpression($propertyEelExpression, $node, $documentNode, $site, $defaultTypoScriptContext);
                             $nextCollectionNode->setProperty($propertyName, $propertyValue);
                         }
                     }
@@ -124,4 +128,13 @@ class ContentRepositoryHooks {
             }
         }
     }
+
+    protected function evaluateExpression ($expression, $node, $documentNode, $site, $defaultTypoScriptContext) {
+        if (is_string($expression) && substr($expression, 0,2) == '${') {
+            return EelUtility::evaluateEelExpression($expression,  $this->eelEvaluator, array('node' => $node, 'documentNode' => $documentNode, 'site' => $site), $defaultTypoScriptContext);
+        } else {
+            return $expression;
+        }
+    }
+
 }
