@@ -4,7 +4,15 @@
 This package allows the configuration of a node hierarchies via eel configuration. 
 A common use case would be to automatically create NewsCollection Nodes for Year and Month 
 and move any News Node into a machig collection node.
-  
+
+## Authors & Sponsors
+
+* Wilhelm Behncke - behncke@sitegeist.de
+* Martin Ficzel - ficzel@sitegeist.de
+
+*The development and the public-releases of this package is generously sponsored 
+by our employer http://www.sitegeist.de.*
+
 ## Usage
 
 ```yaml
@@ -34,12 +42,18 @@ Sitegeist:
               uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
 ```
 
-## Authors & Sponsors
+## Limitations 
 
-* Martin Ficzel - ficzel@sitegeist.de
+The following issues and side effects are known at the moment:
 
-*The development and the public-releases of this package is generously sponsored 
-by our employer http://www.sitegeist.de.*
+1. Currently there is no way to notify the navigate component about a 
+   needed reload. So after a node was moved behind the scene the navigate 
+   component will keep displaying the node on the current position until 
+   the next reaload.
+2. The automatically created nodes are in the user workspace and still 
+   have to be published. It is possible that this will be changed in the future.
+
+
 
 ## Installation 
 
