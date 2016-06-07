@@ -87,3 +87,7 @@ After you finished configuring your composer.json, run the following command to 
 ```shell
 composer update sitegeist/criticalmass
 ```
+
+## License
+
+see [LICENSE file](LICENSE)
