@@ -1,4 +1,38 @@
 # Sitegeist.CriticalMass
+### Automatic creation of node-hierarchies 
+
+This package allows the configuration of a node hierarchies via eel configuration. 
+A common use case would be to automatically create NewsCollection Nodes for Year and Month 
+and move any News Node into a machig collection node.
+  
+## Usage
+
+```yaml
+Sitegeist:
+  CriticalMass:
+    automaticNodeHierarchy:
+    
+      # the configuration for the nodeType Sitegeist.CriticalMass:ExampleNode     
+      'Sitegeist.CriticalMass:ExampleNode':
+      
+        # detect the root-collection node that will contain the automatic created node hierarchie
+        root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection]').slice(-1, 1).get(0)}"
+        
+        # define the levels of the node hierarchie that is created inside the root node
+        path:
+          -
+            name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
+            type: "${'Sitegeist.CriticalMass:ExampleNodeCollection'}"
+            properties:
+              title: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
+              uriPathSegment: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
+          -
+            name: "${'node-event-month-' + (q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month')}"
+            type: "${'Sitegeist.CriticalMass:ExampleNodeCollection'}"
+            properties:
+              title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+              uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+```
 
 ## Authors & Sponsors
 
