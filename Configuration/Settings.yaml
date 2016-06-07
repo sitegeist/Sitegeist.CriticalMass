@@ -1,18 +1,5 @@
 Sitegeist:
   CriticalMass:
-
-    eelContext:
-      String: 'TYPO3\Eel\Helper\StringHelper'
-      Array: 'TYPO3\Eel\Helper\ArrayHelper'
-      Date: 'TYPO3\Eel\Helper\DateHelper'
-      Configuration: 'TYPO3\Eel\Helper\ConfigurationHelper'
-      Math: 'TYPO3\Eel\Helper\MathHelper'
-      Json: 'TYPO3\Eel\Helper\JsonHelper'
-      Security: 'TYPO3\Eel\Helper\SecurityHelper'
-      Translation: 'TYPO3\Flow\I18n\EelHelper\TranslationHelper'
-      Type: 'TYPO3\Eel\Helper\TypeHelper'
-      I18n: 'TYPO3\Flow\I18n\EelHelper\TranslationHelper'
-
     automaticNodeHierarchy:
 #      'Sitegeist.CriticalMass:ExampleNode':
 #        root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection]').slice(-1, 1).get(0)}"
