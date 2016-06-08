@@ -78,38 +78,9 @@ The following issues and side effects are known at the moment:
 2. The automatically created nodes are in the user workspace and still 
    have to be published. It is possible that this will change in the future.
 
-## Installation 
+## Installation
 
-For now this package is not listed at packagist.org, so it needs to be configured via the `repositories` option in your composer.json.
-
-```json
-{
-  "repositories": [
-    {
-      "url": "ssh://git@git.sitegeist.de:40022/sitegeist/Sitegeist.CriticalMass.git",
-      "type": "vcs"
-    }
-  ]
-}
-```
-
-You can then require it as a regular dependency:
-
-```json
-{
-  "dependencies": {
-    "sitegeist/criticalmass": "@dev"
-  }
-}
-```
-
-Currently `@dev` is recommended, since this package is still under development. Later on it should be replaced by the according version constraint.
-
-After you finished configuring your composer.json, run the following command to retrieve the package:
-
-```shell
-composer update sitegeist/criticalmass
-```
+Sitegeist.CriticalMass is available via packagist. Just add `"sitegeist/criticalmass" : "~1.0"` to the require-dev section of the composer.json or run `composer require --dev sitegeist/criticalmass`. We use semantic-versioning so every breaking change will increase the major-version number.
 
 ## License
 
