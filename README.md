@@ -1,22 +1,23 @@
 # Sitegeist.CriticalMass
 ### Help managing huge amounts of nodes by automatic creation of node-hierarchies 
 
-In Neos it is sometimes hard to handle high amounts of document below a 
+In Neos it is sometimes hard to handle high amounts of documents below a 
 single parent node. In such cases it is hard for editors to find a 
 specific document again. On top of that the performance and usability of 
 the current navigate-component will suffer if too many nodes are on a 
 single level.
 
 To overcome this we suggest to use a hierarchical structure of 
-collection-nodes* to create a node structure that is appropriate 
-to the current project and that helps the editors to find dopcuments again. 
-This solution has the additional benefit that this structure is represented 
-in the document-url aswell and makes url-collisions less likely.
+collection-nodes to create a node structure that is appropriate 
+for the current project and that helps editors to find documents. 
+This solution has the additional benefit of representing that structure 
+in the document-url aswell, that makes url-collisions much less likely.
 
 *Since the creation of such a node hierarchy is a repetitive task we 
 provide this package to help automating that.*
 
 This package allows the configuration of node hierarchies via Eel configuration. 
+
 A common use case would be to automatically create NewsCollection Nodes for Year and Month 
 and move any News Node into a matchig collection node.
 
