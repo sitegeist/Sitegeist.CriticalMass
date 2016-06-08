@@ -1,5 +1,20 @@
 # Sitegeist.CriticalMass
-### Automatic creation of node-hierarchies 
+### Help managing huge amounts of nodes by automatic creation of node-hierarchies 
+
+In Neos it is sometimes hard to handle high amounts of document below a 
+single parent node. In such cases it is hard for editors to find a 
+specific document again. On top of that the performance and usability of 
+the current navigate-component will suffer if too many nodes are on a 
+single level.
+
+To overcome this we suggest to use a hierarchical structure of 
+collection-nodes* to create a node structure that is appropriate 
+to the current project and that helps the editors to find dopcuments again. 
+This solution has the additional benefit that this structure is represented 
+in the document-url aswell and makes url-collisions less likely.
+
+*Since the creation of such a node hierarchy is a repetitive task we 
+provide this package to help automating that.*
 
 This package allows the configuration of node hierarchies via Eel configuration. 
 A common use case would be to automatically create NewsCollection Nodes for Year and Month 
@@ -28,15 +43,25 @@ Sitegeist:
         
         # Define the levels of the node hierarchy that are created beneath the root node
         path:
+       
+          # level 1 year
           -
+            # the type and nodename of the hierarchy-node  
+            type: 'Sitegeist.CriticalMass:ExampleNodeCollection'
             name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
-            type: "${'Sitegeist.CriticalMass:ExampleNodeCollection'}"
+            
+            # properties that are applied only on node creation and can be edited afterwards
             properties:
               title: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
               uriPathSegment: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
+          
+          # level 2 month
           -
+            # the type and nodename of the hierarchy-node  
+            type: 'Sitegeist.CriticalMass:ExampleNodeCollection'
             name: "${'node-event-month-' + (q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month')}"
-            type: "${'Sitegeist.CriticalMass:ExampleNodeCollection'}"
+            
+            # properties that are applied only on node creation and can be edited afterwards
             properties:
               title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
               uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
@@ -52,8 +77,6 @@ The following issues and side effects are known at the moment:
    the next reload.
 2. The automatically created nodes are in the user workspace and still 
    have to be published. It is possible that this will change in the future.
-
-
 
 ## Installation 
 
