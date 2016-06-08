@@ -14,7 +14,8 @@ use TYPO3\Eel\FlowQuery\FlowQuery as FlowQuery;
 /**
  * @Flow\Scope("singleton")
  */
-class ContentRepositoryHooks {
+class ContentRepositoryHooks
+{
 
     /**
      * @Flow\Inject
@@ -29,10 +30,10 @@ class ContentRepositoryHooks {
     protected $eelEvaluator;
 
     /**
-     * @Flow\Inject
-     * @var \TYPO3\Flow\Configuration\ConfigurationManager
+     * @Flow\InjectConfiguration(path="defaultContext", package="TYPO3.TypoScript")
+     * @var array
      */
-    protected $configurationManager;
+    protected $defaultTypoScriptContextConfiguration;
 
     /**
      * @var array
@@ -41,23 +42,33 @@ class ContentRepositoryHooks {
     protected $automaticNodeHierarchyConfigurations;
 
     /**
+     * Signal that is triggered on node create
+     *
      * @param NodeInterface $node
      */
-    public function nodeCreated (NodeInterface $node) {
+    public function nodeCreated(NodeInterface $node)
+    {
         $this->handleAutomaticHirarchiesForNodes($node);
     }
 
     /**
+     * Signal that is triggered on node create
+     *
      * @param NodeInterface $node
      */
-    public function nodeUpdated (NodeInterface $node) {
+    public function nodeUpdated(NodeInterface $node)
+    {
         $this->handleAutomaticHirarchiesForNodes($node);
     }
 
     /**
+     * Check wether the given node is affected by automatic hierarchy generation
+     * and apply the configured hierarchie if needed
+     *
      * @param NodeInterface $node
      */
-    protected function handleAutomaticHirarchiesForNodes (NodeInterface $node) {
+    protected function handleAutomaticHirarchiesForNodes(NodeInterface $node)
+    {
         if (is_array($this->automaticNodeHierarchyConfigurations)) {
             foreach ($this->automaticNodeHierarchyConfigurations as $nodeType => $hierarchyConfiguration) {
                 if ($node->getNodeType()->isOfType($nodeType)) {
@@ -68,19 +79,20 @@ class ContentRepositoryHooks {
     }
 
     /**
-     * @param $nodeType
-     * @param $configuration
+     * Apply the given hierarchie configuration to the given node
+     *
+     * @param NodeInterface $nodeType
+     * @param array $configuration
      * @param NodeInterface $node
      */
-    protected function handleAutomaticHierarchyForNodeType(NodeInterface $node, $configuration) {
+    protected function handleAutomaticHierarchyForNodeType(NodeInterface $node, $configuration)
+    {
         $documentNode = (new FlowQuery(array($node)))->closest('[instanceof TYPO3.Neos:Document]')->get(0);
-        $site = (new FlowQuery(array($node)))->parents('[instanceof TYPO3.Neos:Document]')->slice(-1,1)->get(0);
-
-        $defaultTypoScriptContextConfiguration = $this->configurationManager->getConfiguration('Settings', 'Sitegeist.CriticalMass.eelContext');
-        $defaultTypoScriptContext = EelUtility::getDefaultContextVariables($defaultTypoScriptContextConfiguration);
+        $site = (new FlowQuery(array($node)))->parents('[instanceof TYPO3.Neos:Document]')->slice(-1, 1)->get(0);
 
         // find collection root
-        $collectionRoot = $this->evaluateExpression($configuration['root'], $node, $documentNode, $site, $defaultTypoScriptContext);
+        $collectionRoot = $this->evaluateExpression($configuration['root'], $node, $documentNode, $site,
+            $this->defaultTypoScriptContextConfiguration);
         if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
 
             $targetCollectionNode = $collectionRoot;
@@ -88,23 +100,25 @@ class ContentRepositoryHooks {
 
             // traverse path and move node
             foreach ($configuration['path'] as $pathItemConfiguration) {
-                $pathItemTypeConfiguration = $this->evaluateExpression($pathItemConfiguration['type'], $node, $documentNode, $site, $defaultTypoScriptContext);
-                $pathItemNameConfiguration = $this->evaluateExpression($pathItemConfiguration['name'], $node, $documentNode, $site, $defaultTypoScriptContext);
+                $pathItemTypeConfiguration = $this->evaluateExpression($pathItemConfiguration['type'], $node,
+                    $documentNode, $site, $this->defaultTypoScriptContextConfiguration);
+                $pathItemNameConfiguration = $this->evaluateExpression($pathItemConfiguration['name'], $node,
+                    $documentNode, $site, $this->defaultTypoScriptContextConfiguration);
 
                 $pathItemName = CrUtility::renderValidNodeName($pathItemNameConfiguration);
                 $pathItemNodeType = $this->nodeTypeManager->getNodeType($pathItemTypeConfiguration);
 
-                if (!$pathItemNodeType || !$pathItemName){
+                if (!$pathItemNodeType || !$pathItemName) {
                     continue;
                 }
 
                 // find next path collectionNodes
                 $childNodes = $targetCollectionNode->getChildNodes();
-                $nextCollectionNode = NULL;
-                foreach($childNodes as $childNode) {
-                   if ($childNode->getNodeType() == $pathItemNodeType && $childNode->getNodeData()->getName() == $pathItemName) {
-                       $nextCollectionNode = $childNode;
-                   }
+                $nextCollectionNode = null;
+                foreach ($childNodes as $childNode) {
+                    if ($childNode->getNodeType() == $pathItemNodeType && $childNode->getNodeData()->getName() == $pathItemName) {
+                        $nextCollectionNode = $childNode;
+                    }
                 }
 
                 // create missing collectionNodes
@@ -112,7 +126,8 @@ class ContentRepositoryHooks {
                     $nextCollectionNode = $targetCollectionNode->createNode($pathItemName, $pathItemNodeType);
                     if ($pathItemConfiguration['properties']) {
                         foreach ($pathItemConfiguration['properties'] as $propertyName => $propertyEelExpression) {
-                            $propertyValue = $this->evaluateExpression($propertyEelExpression, $node, $documentNode, $site, $defaultTypoScriptContext);
+                            $propertyValue = $this->evaluateExpression($propertyEelExpression, $node, $documentNode,
+                                $site, $this->defaultTypoScriptContextConfiguration);
                             $nextCollectionNode->setProperty($propertyName, $propertyValue);
                         }
                     }
@@ -129,9 +144,28 @@ class ContentRepositoryHooks {
         }
     }
 
-    protected function evaluateExpression ($expression, $node, $documentNode, $site, $defaultTypoScriptContext) {
-        if (is_string($expression) && substr($expression, 0,2) == '${') {
-            return EelUtility::evaluateEelExpression($expression,  $this->eelEvaluator, array('node' => $node, 'documentNode' => $documentNode, 'site' => $site), $defaultTypoScriptContext);
+    /**
+     * Evaluate the given expression as eel if an eel pattern is detected
+     * otherwise return the expression as value
+     *
+     * @param string $expression
+     * @param NodeInterface $node
+     * @param NodeInterface $documentNode
+     * @param NodeInterface $site
+     * @param array $defaultContextConfiguration
+     * @return mixed
+     * @throws \TYPO3\Eel\Exception
+     */
+    protected function evaluateExpression(
+        $expression,
+        NodeInterface $node,
+        NodeInterface $documentNode,
+        NodeInterface $site,
+        $defaultContextConfiguration
+    ) {
+        if (is_string($expression) && substr($expression, 0, 2) == '${') {
+            return EelUtility::evaluateEelExpression($expression, $this->eelEvaluator,
+                array('node' => $node, 'documentNode' => $documentNode, 'site' => $site), $defaultContextConfiguration);
         } else {
             return $expression;
         }

@@ -3,8 +3,7 @@
     "type": "typo3-flow-package",
     "description": "Handle critical masses of nodes in Neos",
     "require": {
-        "typo3/flow": "*",
-        "sitegeist/neosbackendbridge": "@dev"
+        "typo3/typo3cr": "*"
     },
     "autoload": {
         "psr-0": {
