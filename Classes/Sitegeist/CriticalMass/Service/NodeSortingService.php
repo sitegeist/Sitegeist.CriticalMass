@@ -40,7 +40,7 @@ class NodeSortingService
 
 			$object = null;
 			foreach ($nodes as $node) {
-				if ($this->sortingConditionApplies($subject, $node)) {
+				if ($this->sortingConditionApplies($subject, $node, $eelExpression)) {
 					$object = $node;
 					break;
 				}

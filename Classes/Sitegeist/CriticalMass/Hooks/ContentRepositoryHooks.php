@@ -11,6 +11,8 @@ use TYPO3\Eel\CompilingEvaluator;
 
 use TYPO3\Eel\FlowQuery\FlowQuery as FlowQuery;
 
+use Sitegeist\CriticalMass\Service\NodeSortingService;
+
 /**
  * @Flow\Scope("singleton")
  */
@@ -40,6 +42,12 @@ class ContentRepositoryHooks
      * @Flow\InjectConfiguration("automaticNodeHierarchy")
      */
     protected $automaticNodeHierarchyConfigurations;
+
+    /**
+     * @Flow\Inject
+     * @var NodeSortingService
+     */
+    protected $nodeSortingService;
 
     /**
      * Signal that is triggered on node create
@@ -131,6 +139,13 @@ class ContentRepositoryHooks
                             $nextCollectionNode->setProperty($propertyName, $propertyValue);
                         }
                     }
+                }
+
+                if (array_key_exists('sortBy', $pathItemConfiguration) && $pathItemConfiguration['sortBy']) {
+                    $this->nodeSortingService->sortChildNodesByEelExpression(
+                        $targetCollectionNode,
+                        $pathItemConfiguration['sortBy']
+                    );
                 }
 
                 $targetCollectionNode = $nextCollectionNode;
