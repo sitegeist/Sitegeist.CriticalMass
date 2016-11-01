@@ -4,7 +4,8 @@
     "description": "Handle critical masses of nodes in Neos",
     "license": "GPL-3.0",
     "require": {
-        "typo3/typo3cr": "*"
+        "typo3/typo3cr": "*",
+        "typo3/neos": "*"
     },
     "autoload": {
         "psr-0": {

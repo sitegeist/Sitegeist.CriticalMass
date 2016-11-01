@@ -1,0 +1,9 @@
+prototype(TYPO3.Neos:Page) {
+	head.javascripts.criticalMassreloadPagetreeScript = TYPO3.TypoScript:Array {
+		10 = 'document.addEventListener("Neos.PageLoaded", function() {'
+		20 = 'document.getElementById("neos-node-tree-refresh").click();'
+		30 ='});'
+
+		@process.script = ${'<script>' + value + '</script>'}
+	}
+}
