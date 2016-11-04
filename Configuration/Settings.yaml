@@ -38,3 +38,6 @@ TYPO3:
     typoScript:
       autoInclude:
         'Sitegeist.CriticalMass': true
+  TypoScript:
+    defaultContext:
+      'CriticalMass.Node': 'Sitegeist\CriticalMass\Eel\Helper\NodeHelper'
