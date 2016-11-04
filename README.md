@@ -42,6 +42,9 @@ Sitegeist:
         # Detect the root-collection node that will contain the automatically created node hierarchy
         root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection]').slice(-1, 1).get(0)}"
         
+        # optional: Automatically publish the created document hierarchy
+        autoPublishPath: true
+        
         # Define the levels of the node hierarchy that are created beneath the root node
         path:
        
