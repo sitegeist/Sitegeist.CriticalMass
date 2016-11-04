@@ -51,6 +51,9 @@ Sitegeist:
             type: 'Sitegeist.CriticalMass:ExampleNodeCollection'
             name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
             
+            # optional: the sorting of the nodes on this level
+            sortBy: '${q(a).property("title") < q(b).property("title")}'
+             
             # properties that are applied only on node creation and can be edited afterwards
             properties:
               title: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
@@ -62,6 +65,9 @@ Sitegeist:
             type: 'Sitegeist.CriticalMass:ExampleNodeCollection'
             name: "${'node-event-month-' + (q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month')}"
             
+            # optional: the sorting of the nodes on this level
+            sortBy: '${q(a).property("title") < q(b).property("title")}'
+             
             # properties that are applied only on node creation and can be edited afterwards
             properties:
               title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
