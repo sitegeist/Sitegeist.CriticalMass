@@ -4,6 +4,8 @@ namespace Sitegeist\CriticalMass\Hooks;
 
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
+use TYPO3\TYPO3CR\Domain\Service\PublishingServiceInterface;
+use TYPO3\TYPO3CR\Domain\Repository\WorkspaceRepository;
 
 use TYPO3\TYPO3CR\Utility as CrUtility;
 use TYPO3\Eel\Utility as EelUtility;
@@ -24,6 +26,18 @@ class ContentRepositoryHooks
      * @var \TYPO3\TYPO3CR\Domain\Service\NodeTypeManager
      */
     protected $nodeTypeManager;
+
+    /**
+     * @Flow\Inject
+     * @var PublishingServiceInterface
+     */
+    protected $publishingService;
+
+    /**
+     * @Flow\Inject
+     * @var WorkspaceRepository
+     */
+    protected $workspaceRepository;
 
     /**
      * @Flow\Inject(lazy=FALSE)
@@ -156,7 +170,30 @@ class ContentRepositoryHooks
                 // move node into to the target
                 $node->moveInto($targetCollectionNode);
             }
+
+            if (
+                array_key_exists('autoPublishPath', $configuration) &&
+                $configuration['autoPublishPath'] === true
+            ) {
+                foreach ($collectionPath as $nodeOnPath) {
+                    if (!$nodeOnPath->getWorkspace()->isPublicWorkspace()) {
+                        $this->publishContentsRecursively($nodeOnPath);
+                    }
+                }
+            }
         }
+    }
+
+    protected function publishContentsRecursively(NodeInterface $node)
+    {
+        $contents = $node->getChildNodes('TYPO3.Neos:Content');
+        foreach ($contents as $contentNode) {
+            if (!$contentNode->getWorkspace()->isPublicWorkspace()) {
+                $this->publishContentsRecursively($contentNode);
+            }
+        }
+
+        $this->publishingService->publishNode($node);
     }
 
     /**
