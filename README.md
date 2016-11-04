@@ -86,7 +86,7 @@ The following issues and side effects are known at the moment:
    component will keep displaying the node on the current position until 
    the next reload.
 2. The automatically created nodes are in the user workspace and still 
-   have to be published. It is possible that this will change in the future.
+   have to be published. If you want to avoid this use the option ``autoPublishPath``. 
 
 ## Installation
 
