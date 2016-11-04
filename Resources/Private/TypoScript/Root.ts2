@@ -15,7 +15,7 @@ prototype(TYPO3.Neos:Page) {
 		@position = 'before neosBackendContainer'
 		@if.1 = ${true &&
 			documentNode.context.inBackend &&
-			CriticalMass.Node.hasNodeJustBeenCreated(documentNode) &&
+			CriticalMass.Node.hasNodeJustBeenModified(documentNode) &&
 			CriticalMass.Node.isHierarchyGenerationConfiguredForNode(documentNode)
 		}
 	}

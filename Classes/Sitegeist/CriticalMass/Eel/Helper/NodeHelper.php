@@ -4,7 +4,7 @@ namespace Sitegeist\CriticalMass\Eel\Helper;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Eel\ProtectedContextAwareInterface;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
-use Sitegeist\CriticalMass\Aspects\RememberJustCreatedNodeAspect;
+use Sitegeist\CriticalMass\Aspects\RememberJustModifiedNodeAspect;
 
 /**
  * Eel helper for node handling
@@ -13,16 +13,16 @@ class NodeHelper implements ProtectedContextAwareInterface
 {
 	/**
 	 * @Flow\Inject
-	 * @var RememberJustCreatedNodeAspect
+	 * @var RememberJustModifiedNodeAspect
 	 */
-	protected $rememberJustCreatedNodeAspect;
+	protected $rememberJustModifiedNodeAspect;
 
 	/**
-	 * Identifier of the latest created node
+	 * Identifier of the latest modified node
 	 *
 	 * @var string
 	 */
-	protected $justCreatedNodeIdentifier = null;
+	protected $justModifiedNodeIdentifier = null;
 
 	/**
      * @var array
@@ -49,19 +49,19 @@ class NodeHelper implements ProtectedContextAwareInterface
 	}
 
 	/**
-	 * Check whether the given node has just been created
+	 * Check whether the given node has just been modified
 	 *
 	 * @param NodeInterface $node
 	 * @return boolean
 	 */
-	public function hasNodeJustBeenCreated(NodeInterface $node)
+	public function hasNodeJustBeenModified(NodeInterface $node)
 	{
-		if ($this->justCreatedNodeIdentifier === null) {
-			$this->justCreatedNodeIdentifier = $this->rememberJustCreatedNodeAspect
-				->getAndFlushJustCreatedNodeIdentifier();
+		if ($this->justModifiedNodeIdentifier === null) {
+			$this->justModifiedNodeIdentifier = $this->rememberJustModifiedNodeAspect
+				->getAndFlushJustModifiedNodeIdentifier();
 		}
 
-		return $node->getIdentifier() === $this->justCreatedNodeIdentifier;
+		return $node->getIdentifier() === $this->justModifiedNodeIdentifier;
 	}
 
 	/**
