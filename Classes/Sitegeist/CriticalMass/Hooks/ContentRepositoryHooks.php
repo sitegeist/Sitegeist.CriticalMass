@@ -3,6 +3,7 @@
 namespace Sitegeist\CriticalMass\Hooks;
 
 use TYPO3\Flow\Annotations as Flow;
+use TYPO3\Flow\Persistence\PersistenceManagerInterface;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 use TYPO3\TYPO3CR\Domain\Service\PublishingServiceInterface;
 use TYPO3\TYPO3CR\Domain\Repository\WorkspaceRepository;
@@ -64,6 +65,12 @@ class ContentRepositoryHooks
     protected $nodeSortingService;
 
     /**
+     * @flow\Inject
+     * @var PersistenceManagerInterface
+     */
+    protected $persistenceManager;
+
+    /**
      * Signal that is triggered on node create
      *
      * @param NodeInterface $node
@@ -109,6 +116,9 @@ class ContentRepositoryHooks
      */
     protected function handleAutomaticHierarchyForNodeType(NodeInterface $node, $configuration)
     {
+        // Make sure, we get consistent datta fro our queries
+        $this->persistenceManager->persistAll();
+
         $documentNode = (new FlowQuery(array($node)))->closest('[instanceof TYPO3.Neos:Document]')->get(0);
         $site = (new FlowQuery(array($node)))->parents('[instanceof TYPO3.Neos:Document]')->slice(-1, 1)->get(0);
 
