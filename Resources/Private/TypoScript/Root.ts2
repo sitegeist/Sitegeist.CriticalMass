@@ -1,0 +1,22 @@
+prototype(Neos.Neos:Page) {
+	head.javascripts.criticalMassReloadPagetreeScript = Neos.Fusion:Array {
+		10 = 'document.addEventListener("Neos.PageLoaded", function() {'
+		20 = 'if (document.getElementById("sitegeist-critical-mass-reload-page-tree"))'
+		30 = 'document.getElementById("neos-node-tree-refresh").click();'
+		40 ='});'
+
+		@process.script = ${'<script>' + value + '</script>'}
+		@if.1 = ${documentNode.context.inBackend}
+	}
+
+	criticalMassReloadPagetreeMarker = Neos.Fusion:Value {
+		value = '<div style="display: none;" id="sitegeist-critical-mass-reload-page-tree"></div>'
+
+		@position = 'before neosBackendContainer'
+		@if.1 = ${true &&
+			documentNode.context.inBackend &&
+			CriticalMass.Node.hasNodeJustBeenModified(documentNode) &&
+			CriticalMass.Node.isHierarchyGenerationConfiguredForNode(documentNode)
+		}
+	}
+}
