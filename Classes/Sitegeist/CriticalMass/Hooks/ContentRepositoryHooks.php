@@ -47,7 +47,7 @@ class ContentRepositoryHooks
     protected $eelEvaluator;
 
     /**
-     * @Flow\InjectConfiguration(path="defaultContext", package="TYPO3.TypoScript")
+     * @Flow\InjectConfiguration(path="defaultContext", package="Neos.Fusion")
      * @var array
      */
     protected $defaultTypoScriptContextConfiguration;
