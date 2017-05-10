@@ -1,7 +1,7 @@
 <?php
 namespace Sitegeist\CriticalMass\Service;
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 use TYPO3\Eel\Utility as EelUtility;
 use TYPO3\Eel\CompilingEvaluator;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;

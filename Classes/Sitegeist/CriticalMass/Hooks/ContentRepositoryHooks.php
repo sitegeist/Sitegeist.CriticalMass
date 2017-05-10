@@ -2,8 +2,8 @@
 
 namespace Sitegeist\CriticalMass\Hooks;
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Persistence\PersistenceManagerInterface;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Persistence\PersistenceManagerInterface;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 use TYPO3\TYPO3CR\Domain\Service\PublishingServiceInterface;
 use TYPO3\TYPO3CR\Domain\Repository\WorkspaceRepository;
