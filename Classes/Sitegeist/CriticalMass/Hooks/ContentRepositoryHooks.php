@@ -4,11 +4,11 @@ namespace Sitegeist\CriticalMass\Hooks;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
-use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
-use TYPO3\TYPO3CR\Domain\Service\PublishingServiceInterface;
-use TYPO3\TYPO3CR\Domain\Repository\WorkspaceRepository;
+use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Domain\Service\PublishingServiceInterface;
+use Neos\ContentRepository\Domain\Repository\WorkspaceRepository;
 
-use TYPO3\TYPO3CR\Utility as CrUtility;
+use Neos\ContentRepository\Utility as CrUtility;
 use Neos\Eel\Utility as EelUtility;
 use Neos\Eel\CompilingEvaluator;
 
@@ -24,7 +24,7 @@ class ContentRepositoryHooks
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\TYPO3CR\Domain\Service\NodeTypeManager
+     * @var \Neos\ContentRepository\Domain\Service\NodeTypeManager
      */
     protected $nodeTypeManager;
 

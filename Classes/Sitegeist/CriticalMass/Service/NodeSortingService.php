@@ -4,7 +4,7 @@ namespace Sitegeist\CriticalMass\Service;
 use Neos\Flow\Annotations as Flow;
 use Neos\Eel\Utility as EelUtility;
 use Neos\Eel\CompilingEvaluator;
-use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Domain\Model\NodeInterface;
 
 /**
  * @Flow\Scope("singleton")
