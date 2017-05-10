@@ -119,8 +119,8 @@ class ContentRepositoryHooks
         // Make sure, we get consistent datta fro our queries
         $this->persistenceManager->persistAll();
 
-        $documentNode = (new FlowQuery(array($node)))->closest('[instanceof TYPO3.Neos:Document]')->get(0);
-        $site = (new FlowQuery(array($node)))->parents('[instanceof TYPO3.Neos:Document]')->slice(-1, 1)->get(0);
+        $documentNode = (new FlowQuery(array($node)))->closest('[instanceof Neos.Neos:Document]')->get(0);
+        $site = (new FlowQuery(array($node)))->parents('[instanceof Neos.Neos:Document]')->slice(-1, 1)->get(0);
 
         // find collection root
         $collectionRoot = $this->evaluateExpression($configuration['root'], $node, $documentNode, $site,
@@ -196,7 +196,7 @@ class ContentRepositoryHooks
 
     protected function publishContentsRecursively(NodeInterface $node)
     {
-        $contents = $node->getChildNodes('TYPO3.Neos:Content');
+        $contents = $node->getChildNodes('Neos.Neos:Content');
         foreach ($contents as $contentNode) {
             if (!$contentNode->getWorkspace()->isPublicWorkspace()) {
                 $this->publishContentsRecursively($contentNode);

@@ -32,7 +32,7 @@ class NodeSortingService
 	public function sortChildNodesByEelExpression(
 		NodeInterface $node,
 		$eelExpression,
-		$nodeTypeFilter = 'TYPO3.Neos:Document'
+		$nodeTypeFilter = 'Neos.Neos:Document'
 	) {
 		$nodes = $node->getChildNodes($nodeTypeFilter);
 
