@@ -2,8 +2,8 @@
 namespace Sitegeist\CriticalMass\Service;
 
 use Neos\Flow\Annotations as Flow;
-use TYPO3\Eel\Utility as EelUtility;
-use TYPO3\Eel\CompilingEvaluator;
+use Neos\Eel\Utility as EelUtility;
+use Neos\Eel\CompilingEvaluator;
 use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 
 /**

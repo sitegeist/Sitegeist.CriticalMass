@@ -9,10 +9,10 @@ use TYPO3\TYPO3CR\Domain\Service\PublishingServiceInterface;
 use TYPO3\TYPO3CR\Domain\Repository\WorkspaceRepository;
 
 use TYPO3\TYPO3CR\Utility as CrUtility;
-use TYPO3\Eel\Utility as EelUtility;
-use TYPO3\Eel\CompilingEvaluator;
+use Neos\Eel\Utility as EelUtility;
+use Neos\Eel\CompilingEvaluator;
 
-use TYPO3\Eel\FlowQuery\FlowQuery as FlowQuery;
+use Neos\Eel\FlowQuery\FlowQuery as FlowQuery;
 
 use Sitegeist\CriticalMass\Service\NodeSortingService;
 
@@ -216,7 +216,7 @@ class ContentRepositoryHooks
      * @param NodeInterface $site
      * @param array $defaultContextConfiguration
      * @return mixed
-     * @throws \TYPO3\Eel\Exception
+     * @throws \Neos\Eel\Exception
      */
     protected function evaluateExpression(
         $expression,
