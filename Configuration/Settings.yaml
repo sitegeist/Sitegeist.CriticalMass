@@ -32,3 +32,12 @@ Sitegeist:
 #            properties:
 #              title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
 #              uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+
+TYPO3:
+  Neos:
+    typoScript:
+      autoInclude:
+        'Sitegeist.CriticalMass': true
+  TypoScript:
+    defaultContext:
+      'CriticalMass.Node': 'Sitegeist\CriticalMass\Eel\Helper\NodeHelper'
