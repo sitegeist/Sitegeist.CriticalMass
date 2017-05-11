@@ -32,7 +32,27 @@ Sitegeist:
 #            properties:
 #              title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
 #              uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
-
+#
+#  import:
+#    exampleNode:
+#      nodePath: ''
+#      query:
+#      type: 'Sitegeist.CriticalMass:ExampleNode'
+#      name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
+#      fields:
+#        title: "
+#
+#  export:
+#    exampleNodes:
+#      nodePath: ''
+#      query: ''
+#      filter: ''
+#      type: 'Sitegeist.CriticalMass:Example'
+#      name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
+#      properties:
+#        title: "${q(node).property('title')}"
+#        date: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+#
 
 Neos:
   Neos:

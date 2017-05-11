@@ -116,11 +116,11 @@ class ContentRepositoryHooks
      */
     protected function handleAutomaticHierarchyForNodeType(NodeInterface $node, $configuration)
     {
-        // Make sure, we get consistent datta fro our queries
+        // Make sure, we get consistent data from our queries
         $this->persistenceManager->persistAll();
 
         $documentNode = (new FlowQuery(array($node)))->closest('[instanceof Neos.Neos:Document]')->get(0);
-        $site = (new FlowQuery(array($node)))->parents('[instanceof Neos.Neos:Document]')->slice(-1, 1)->get(0);
+        $site = (new FlowQuery(array($node)))->parents('[instanceof Neos.Neos:Document]')->last()->get(0);
 
         // find collection root
         $collectionRoot = $this->evaluateExpression($configuration['root'], $node, $documentNode, $site,
