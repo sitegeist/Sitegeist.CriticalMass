@@ -112,7 +112,6 @@ Sitegeist:
         
         # optional: Configuration for importing previously imported nodes
         update: 
-        
           # Expression that returns the node that shall be updated 
           node: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNode][importIdentifier=\"' +  row['ID'] + '\"]').get(0)}"
 
@@ -120,13 +119,11 @@ Sitegeist:
         create:
           # optional: skip import under certain conditions
           condition: "${row['ID'] ? true : false}"
-
           # Expression that returns the node that shall be updated 
-          parentNode: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection].get(0)}"
+          parentNode: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection].get(0)}"   
           # The type of the node that shall be created
           type: 'Sitegeist.CriticalMass:ExampleNode'
-          
-          # optional:  The properties that are only for newly creted nodes during new  
+          # optional:  The properties that are set once for new imported nodes  
           properties:
             'importIdentifier': "${row['ID']}"
 
@@ -141,10 +138,9 @@ Sitegeist:
         #
         # !!! The expressions in here have the imported or updated node in the context as `ancestor`
         #
-        # All the configuration from the main level van be used in here aswell. Descendent-nodes can
+        # All the configuration from the main level can be used in here aswell. Descendent-nodes can
         # even have their own descendent nodes.
         descendents:
-
           image:
             update:
               node: "${q(ancestor).children('images').children().get(0)}"
@@ -155,6 +151,7 @@ Sitegeist:
             properties:
               'title': "${row['Title']}"
               'image': "${row['Image']}"
+              
     #
     # Node-export
     #
@@ -173,7 +170,7 @@ Sitegeist:
         
         # The properties that are exported
         #
-        # each row in here is evaluated with 'site' and 'node' in the context.
+        # Each configuration key in here is evaluated as en expression with 'site' and 'node' in the context.
         properties:
           'ID': "${q(node).property('importIdentifier')}"
           'Title': "${q(node).property('title')}"
