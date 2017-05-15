@@ -143,7 +143,7 @@ Sitegeist:
         #
         # All the configuration from the main level can be used in here aswell. Descendent-nodes can
         # even have their own descendent nodes.
-        descendents:
+        descendants:
           image:
             update:
               node: "${q(ancestor).children('images').children().get(0)}"
@@ -169,7 +169,7 @@ Sitegeist:
         description: "Example-export description"
 
         # Expression that returns the nodes that shall be exported 
-        nodesExpression: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNode]').get()}"
+        nodes: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNode]').get()}"
         
         # The properties that are exported
         #

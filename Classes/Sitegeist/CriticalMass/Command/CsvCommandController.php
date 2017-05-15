@@ -183,9 +183,9 @@ class CsvCommandController extends CommandController
         }
 
         if ($node && $node instanceof NodeInterface) {
-            $descendentImportConfigurations = Arrays::getValueByPath($configuration, 'descendents');
-            if ($descendentImportConfigurations) {
-                foreach ($descendentImportConfigurations as $key => $descendentImportConfiguration) {
+            $descendantImportConfigurations = Arrays::getValueByPath($configuration, 'descendants');
+            if ($descendantImportConfigurations) {
+                foreach ($descendantImportConfigurations as $key => $descendentImportConfiguration) {
                     $this->import(
                         Arrays::arrayMergeRecursiveOverrule($context, ['ancestor' => $node]),
                         $descendentImportConfiguration
@@ -244,7 +244,7 @@ class CsvCommandController extends CommandController
         $contentContext = $this->contentContextFactory->create(['currentSite' => $site]);
         $siteNode = $contentContext->getCurrentSiteNode();
 
-        $nodes = $this->expressionService->evaluateExpression($configuration['nodesExpression'], ['site'=> $siteNode]);
+        $nodes = $this->expressionService->evaluateExpression($configuration['nodes'], ['site'=> $siteNode]);
 
         $fileHandle = fopen($file, 'w');
         fputcsv($fileHandle, array_keys($configuration['properties']));
