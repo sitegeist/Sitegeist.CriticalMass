@@ -123,19 +123,33 @@ class ContentRepositoryHooks
         $site = (new FlowQuery(array($node)))->parents('[instanceof Neos.Neos:Document]')->last()->get(0);
 
         // find collection root
-        $collectionRoot = $this->evaluateExpression($configuration['root'], $node, $documentNode, $site,
-            $this->defaultTypoScriptContextConfiguration);
+        $collectionRoot = $this->evaluateExpression(
+            $configuration['root'],
+            $node,
+            $documentNode,
+            $site,
+            $this->defaultTypoScriptContextConfiguration
+        );
         if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
-
             $targetCollectionNode = $collectionRoot;
             $collectionPath = array($targetCollectionNode);
 
             // traverse path and move node
             foreach ($configuration['path'] as $pathItemConfiguration) {
-                $pathItemTypeConfiguration = $this->evaluateExpression($pathItemConfiguration['type'], $node,
-                    $documentNode, $site, $this->defaultTypoScriptContextConfiguration);
-                $pathItemNameConfiguration = $this->evaluateExpression($pathItemConfiguration['name'], $node,
-                    $documentNode, $site, $this->defaultTypoScriptContextConfiguration);
+                $pathItemTypeConfiguration = $this->evaluateExpression(
+                    $pathItemConfiguration['type'],
+                    $node,
+                    $documentNode,
+                    $site,
+                    $this->defaultTypoScriptContextConfiguration
+                );
+                $pathItemNameConfiguration = $this->evaluateExpression(
+                    $pathItemConfiguration['name'],
+                    $node,
+                    $documentNode,
+                    $site,
+                    $this->defaultTypoScriptContextConfiguration
+                );
 
                 $pathItemName = CrUtility::renderValidNodeName($pathItemNameConfiguration);
                 $pathItemNodeType = $this->nodeTypeManager->getNodeType($pathItemTypeConfiguration);
@@ -148,7 +162,9 @@ class ContentRepositoryHooks
                 $childNodes = $targetCollectionNode->getChildNodes();
                 $nextCollectionNode = null;
                 foreach ($childNodes as $childNode) {
-                    if ($childNode->getNodeType() == $pathItemNodeType && $childNode->getNodeData()->getName() == $pathItemName) {
+                    if ($childNode->getNodeType() == $pathItemNodeType
+                        && $childNode->getNodeData()->getName() == $pathItemName
+                    ) {
                         $nextCollectionNode = $childNode;
                     }
                 }
@@ -158,8 +174,13 @@ class ContentRepositoryHooks
                     $nextCollectionNode = $targetCollectionNode->createNode($pathItemName, $pathItemNodeType);
                     if ($pathItemConfiguration['properties']) {
                         foreach ($pathItemConfiguration['properties'] as $propertyName => $propertyEelExpression) {
-                            $propertyValue = $this->evaluateExpression($propertyEelExpression, $node, $documentNode,
-                                $site, $this->defaultTypoScriptContextConfiguration);
+                            $propertyValue = $this->evaluateExpression(
+                                $propertyEelExpression,
+                                $node,
+                                $documentNode,
+                                $site,
+                                $this->defaultTypoScriptContextConfiguration
+                            );
                             $nextCollectionNode->setProperty($propertyName, $propertyValue);
                         }
                     }
@@ -181,8 +202,7 @@ class ContentRepositoryHooks
                 $node->moveInto($targetCollectionNode);
             }
 
-            if (
-                array_key_exists('autoPublishPath', $configuration) &&
+            if (array_key_exists('autoPublishPath', $configuration) &&
                 $configuration['autoPublishPath'] === true
             ) {
                 foreach ($collectionPath as $nodeOnPath) {
@@ -226,11 +246,14 @@ class ContentRepositoryHooks
         $defaultContextConfiguration
     ) {
         if (is_string($expression) && substr($expression, 0, 2) == '${') {
-            return EelUtility::evaluateEelExpression($expression, $this->eelEvaluator,
-                array('node' => $node, 'documentNode' => $documentNode, 'site' => $site), $defaultContextConfiguration);
+            return EelUtility::evaluateEelExpression(
+                $expression,
+                $this->eelEvaluator,
+                array('node' => $node, 'documentNode' => $documentNode, 'site' => $site),
+                $defaultContextConfiguration
+            );
         } else {
             return $expression;
         }
     }
-
 }

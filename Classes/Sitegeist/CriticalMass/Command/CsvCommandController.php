@@ -66,18 +66,20 @@ class CsvCommandController extends CommandController
      * List the defined import and export presets
      *
      */
-    public function showPresetsCommand ()
+    public function showPresetsCommand()
     {
         $this->outputLine('Import presets:');
         if ($this->importConfigurations && is_array($this->importConfigurations)) {
             foreach ($this->importConfigurations as $presetName => $preset) {
-                $this->outputLine(sprintf(' - %s : %s', $presetName, (array_key_exists('description', $preset) ? $preset['description'] : '')));
+                $description = array_key_exists('description', $preset) ? $preset['description'] : '';
+                $this->outputLine(sprintf(' - %s : %s', $presetName, $description));
             }
         }
         $this->outputLine('Export presets:');
         if ($this->exportConfigurations && is_array($this->exportConfigurations)) {
             foreach ($this->exportConfigurations as $presetName => $preset) {
-                $this->outputLine(sprintf(' - %s : %s', $presetName, (array_key_exists('description', $preset) ? $preset['description'] : '')));
+                $description = array_key_exists('description', $preset) ? $preset['description'] : '';
+                $this->outputLine(sprintf(' - %s : %s', $presetName, $description));
             }
         }
     }
@@ -89,10 +91,13 @@ class CsvCommandController extends CommandController
      * @param string $file File-name
      * @param string $siteNode SiteNode-name
      */
-    public function importCommand ($preset, $file, $siteNode = null)
+    public function importCommand($preset, $file, $siteNode = null)
     {
 
-        if ($this->importConfigurations && is_array($this->importConfigurations) && array_key_exists($preset,$this->importConfigurations) === false ) {
+        if ($this->importConfigurations
+            && is_array($this->importConfigurations)
+            && array_key_exists($preset, $this->importConfigurations) === false
+        ) {
             $this->outputLine(sprintf('The import-preset %s was not found', $preset));
             $this->quit(1);
         } else {
@@ -118,7 +123,7 @@ class CsvCommandController extends CommandController
         $handle =  fopen($file, "r");
         $fieldNames = fgetcsv($fileHandle);
 
-        while (($data = fgetcsv($fileHandle)) !== FALSE) {
+        while (($data = fgetcsv($fileHandle)) !== false) {
             // map data to keys
             $row = array_combine($fieldNames, $data);
             $context = ['site' => $siteNode, 'row' => $row];
@@ -128,7 +133,8 @@ class CsvCommandController extends CommandController
     }
 
 
-    protected function import($context, $configuration) {
+    protected function import($context, $configuration)
+    {
         $updateNodeQuery = Arrays::getValueByPath($configuration, 'update.nodeExpression');
 
         $createCondition = Arrays::getValueByPath($configuration, 'create.condition');
@@ -152,7 +158,7 @@ class CsvCommandController extends CommandController
         }
 
         if ($node instanceof NodeInterface) {
-            $this->update($node, $context, $propertyMap );
+            $this->update($node, $context, $propertyMap);
         } elseif ($createNodeType) {
             if ($createCondition) {
                 $conditionResult = $this->expressionService->evaluateExpression($createCondition, $context);
@@ -167,9 +173,10 @@ class CsvCommandController extends CommandController
                 $nodeTemplate = new NodeTemplate();
                 $nodeTemplate->setNodeType($nodeType);
                 if ($createPropertyMap) {
-                    $this->update($nodeTemplate, $context, Arrays::arrayMergeRecursiveOverrule($propertyMap, $createPropertyMap) );
+                    $mergedPropertyMap = Arrays::arrayMergeRecursiveOverrule($propertyMap, $createPropertyMap);
+                    $this->update($nodeTemplate, $context, $mergedPropertyMap);
                 } else {
-                    $this->update($nodeTemplate, $context, $propertyMap, $createPropertyMap);
+                    $this->update($nodeTemplate, $context, $propertyMap);
                 }
                 $node = $parent->createNodeFromTemplate($nodeTemplate);
             }
@@ -179,7 +186,10 @@ class CsvCommandController extends CommandController
             $descendentImportConfigurations = Arrays::getValueByPath($configuration, 'descendents');
             if ($descendentImportConfigurations) {
                 foreach ($descendentImportConfigurations as $key => $descendentImportConfiguration) {
-                    $this->import(Arrays::arrayMergeRecursiveOverrule($context, ['ancestor' => $node]), $descendentImportConfiguration);
+                    $this->import(
+                        Arrays::arrayMergeRecursiveOverrule($context, ['ancestor' => $node]),
+                        $descendentImportConfiguration
+                    );
                 }
             }
         }
@@ -207,9 +217,12 @@ class CsvCommandController extends CommandController
      * @param string $file File-name
      * @param string $siteNode SiteNode-name
      */
-    public function exportCommand ($preset, $file , $siteNode = null)
+    public function exportCommand($preset, $file, $siteNode = null)
     {
-        if ($this->exportConfigurations && is_array($this->exportConfigurations) && array_key_exists($preset,$this->exportConfigurations) === false ) {
+        if ($this->exportConfigurations
+            && is_array($this->exportConfigurations)
+            && array_key_exists($preset, $this->exportConfigurations) === false
+        ) {
             $this->outputLine(sprintf('The export-preset %s was not found', $preset));
             $this->quit(1);
         } else {
@@ -238,13 +251,15 @@ class CsvCommandController extends CommandController
         foreach ($nodes as $node) {
             $row = [];
             foreach ($configuration['properties'] as $expression) {
-                $row[] = $this->expressionService->evaluateExpression($expression, ['site'=> $siteNode, 'node' => $node]);
+                $row[] = $this->expressionService->evaluateExpression(
+                    $expression,
+                    ['site'=> $siteNode, 'node' => $node]
+                );
             }
             fputcsv($fileHandle, $row);
         }
         fclose($fileHandle);
 
         $this->outputLine(sprintf('Exported %s nodes to file %s', count($nodes), $file));
-
     }
 }

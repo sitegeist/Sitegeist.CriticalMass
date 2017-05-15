@@ -41,11 +41,14 @@ class ExpressionService
     ) {
         if (is_string($expression) && substr($expression, 0, 2) == '${') {
             $expression = str_replace(chr(10), '', $expression);
-            return EelUtility::evaluateEelExpression($expression, $this->eelEvaluator,
-                $context, $this->defaultTypoScriptContextConfiguration);
+            return EelUtility::evaluateEelExpression(
+                $expression,
+                $this->eelEvaluator,
+                $context,
+                $this->defaultTypoScriptContextConfiguration
+            );
         } else {
             return $expression;
         }
     }
-
 }
