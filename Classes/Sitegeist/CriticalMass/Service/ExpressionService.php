@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: MFI
- * Date: 11.05.17
- * Time: 08:11
- */
 
 namespace Sitegeist\CriticalMass\Service;
 

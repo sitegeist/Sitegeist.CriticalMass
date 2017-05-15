@@ -1,19 +1,20 @@
 <?php
 namespace Sitegeist\CriticalMass\Command;
 
-use Gedmo\Tree\Node;
+use Neos\Flow\Annotations as Flow;
+use Neos\Utility\Arrays;
+
 use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\Model\NodeTemplate;
 use Neos\ContentRepository\Domain\Service\NodeTypeManager;
-use Neos\ContentRepository\Utility;
-use Neos\Eel\FlowQuery\FlowQuery;
-use Neos\Flow\Annotations as Flow;
+
 use Neos\Flow\Cli\CommandController;
+
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\ContentContextFactory;
 use Neos\Neos\Domain\Service\SiteService;
+
 use Sitegeist\CriticalMass\Service\ExpressionService;
-use Neos\Utility\Arrays;
 
 class CsvCommandController extends CommandController
 {
@@ -60,7 +61,6 @@ class CsvCommandController extends CommandController
      * @var NodeTypeManager
      */
     protected $nodeTypeManager;
-
 
     /**
      * List the defined import and export presets
