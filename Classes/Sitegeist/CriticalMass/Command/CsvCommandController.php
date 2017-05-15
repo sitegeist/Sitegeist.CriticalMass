@@ -135,10 +135,10 @@ class CsvCommandController extends CommandController
 
     protected function import($context, $configuration)
     {
-        $updateNodeQuery = Arrays::getValueByPath($configuration, 'update.nodeExpression');
+        $updateNodeQuery = Arrays::getValueByPath($configuration, 'update.node');
 
         $createCondition = Arrays::getValueByPath($configuration, 'create.condition');
-        $createParentQuery = Arrays::getValueByPath($configuration, 'create.parentNodeExpression');
+        $createParentQuery = Arrays::getValueByPath($configuration, 'create.parentNode');
         $createNodeType = Arrays::getValueByPath($configuration, 'create.type');
         $createPropertyMap = Arrays::getValueByPath($configuration, 'create.properties');
 

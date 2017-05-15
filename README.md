@@ -111,7 +111,7 @@ Sitegeist:
         update: 
         
           # Expression that returns the node that shall be updated 
-          nodeExpression: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNode][importIdentifier=\"' +  row['ID'] + '\"]').get(0)}"
+          node: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNode][importIdentifier=\"' +  row['ID'] + '\"]').get(0)}"
 
         # optional: Configuration for creating new nodes if no update was configured or no preexisting node is found
         create:
@@ -119,7 +119,7 @@ Sitegeist:
           condition: "${row['ID'] ? true : false}"
 
           # Expression that returns the node that shall be updated 
-          parentExpression: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection].get(0)}"
+          parentNode: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection].get(0)}"
           # The type of the node that shall be created
           type: 'Sitegeist.CriticalMass:ExampleNode'
           
@@ -144,10 +144,10 @@ Sitegeist:
 
           image:
             update:
-              nodeExpression: "${q(ancestor).children('images').children().get(0)}"
+              node: "${q(ancestor).children('images').children().get(0)}"
             create:
               condition: "${row['Image'] ? true : false}"
-              parentExpression: "${q(ancestor).children('images').get(0)}"
+              parentNode: "${q(ancestor).children('images').get(0)}"
               nodeType: 'Sitegeist.CriticalMass:ExampleImage'
             properties:
               'title': "${row['Title']}"
