@@ -119,8 +119,23 @@ class ContentRepositoryHooks
         // Make sure, we get consistent data from our queries
         $this->persistenceManager->persistAll();
 
+
         $documentNode = (new FlowQuery(array($node)))->closest('[instanceof Neos.Neos:Document]')->get(0);
         $site = (new FlowQuery(array($node)))->parents('[instanceof Neos.Neos:Document]')->last()->get(0);
+
+        // check the condition first if one is defined
+        if (array_key_exists('condition', $configuration) && $configuration['condition']) {
+            $evaluatedCondition = $this->evaluateExpression(
+                $configuration['condition'],
+                $node,
+                $documentNode,
+                $site,
+                $this->defaultTypoScriptContextConfiguration
+            );
+            if (!$evaluatedCondition) {
+                return;
+            }
+        }
 
         // find collection root
         $collectionRoot = $this->evaluateExpression(

@@ -62,6 +62,9 @@ Sitegeist:
         
         # optional: Automatically publish the created document hierarchy
         autoPublishPath: true
+
+        # optional: Decide wether a node shall be handled or not
+        condition: "${q(node).property('startDate') ? true : false}"
         
         # Define the levels of the node hierarchy that are created beneath the root node
         path:
