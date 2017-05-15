@@ -66,6 +66,9 @@ Sitegeist:
         # optional: Decide wether a node shall be handled or not
         condition: "${q(node).property('startDate') ? true : false}"
         
+        # optional: The sorting of the nodes inside the target hierarchy
+        sortBy: '${q(a).property("title") < q(b).property("title")}'
+
         # Define the levels of the node hierarchy that are created beneath the root node
         path:
        

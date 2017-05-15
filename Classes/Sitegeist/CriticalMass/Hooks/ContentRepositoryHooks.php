@@ -217,6 +217,13 @@ class ContentRepositoryHooks
                 $node->moveInto($targetCollectionNode);
             }
 
+            if (array_key_exists('sortBy', $configuration) && $configuration['sortBy']) {
+                $this->nodeSortingService->sortChildNodesByEelExpression(
+                    $targetCollectionNode,
+                    $configuration['sortBy']
+                );
+            }
+
             if (array_key_exists('autoPublishPath', $configuration) &&
                 $configuration['autoPublishPath'] === true
             ) {
