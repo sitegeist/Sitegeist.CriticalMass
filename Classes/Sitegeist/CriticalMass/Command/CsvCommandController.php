@@ -129,16 +129,14 @@ class CsvCommandController extends CommandController
 
 
     protected function import($context, $configuration) {
-        $updateNodeQuery = Arrays::getValueByPath($configuration, 'update.nodeQuery');
+        $updateNodeQuery = Arrays::getValueByPath($configuration, 'update.nodeExpression');
 
         $createCondition = Arrays::getValueByPath($configuration, 'create.condition');
-        $createParentQuery = Arrays::getValueByPath($configuration, 'create.parentQuery');
-        $createNodeType = Arrays::getValueByPath($configuration, 'create.nodeType');
+        $createParentQuery = Arrays::getValueByPath($configuration, 'create.parentNodeExpression');
+        $createNodeType = Arrays::getValueByPath($configuration, 'create.type');
         $createPropertyMap = Arrays::getValueByPath($configuration, 'create.properties');
 
         $propertyMap = Arrays::getValueByPath($configuration, 'properties');
-
-
 
         /**
          * @var NodeInterface
@@ -211,8 +209,6 @@ class CsvCommandController extends CommandController
      */
     public function exportCommand ($preset, $file , $siteNode = null)
     {
-
-
         if ($this->exportConfigurations && is_array($this->exportConfigurations) && array_key_exists($preset,$this->exportConfigurations) === false ) {
             $this->outputLine(sprintf('The export-preset %s was not found', $preset));
             $this->quit(1);
@@ -235,7 +231,7 @@ class CsvCommandController extends CommandController
         $contentContext = $this->contentContextFactory->create(['currentSite' => $site]);
         $siteNode = $contentContext->getCurrentSiteNode();
 
-        $nodes = $this->expressionService->evaluateExpression($configuration['query'], ['site'=> $siteNode]);
+        $nodes = $this->expressionService->evaluateExpression($configuration['nodesExpression'], ['site'=> $siteNode]);
 
         $fileHandle = fopen($file, 'w');
         fputcsv($fileHandle, array_keys($configuration['properties']));
