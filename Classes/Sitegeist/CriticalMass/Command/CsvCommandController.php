@@ -2,6 +2,7 @@
 namespace Sitegeist\CriticalMass\Command;
 
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Utility\Arrays;
 
 use Neos\ContentRepository\Domain\Model\NodeInterface;
@@ -173,7 +174,10 @@ class CsvCommandController extends CommandController
             if ($verbose) {
                 $this->outputLine(sprintf('- update node of type %s at path %s ', $node->getNodeType()->getName(), $node->getPath()));
             }
-            $this->update($node, $context, $propertyMap);
+            $persistenceNeeded = $this->update($node, $context, $propertyMap);
+            if ($persistenceNeeded) {
+                $this->persistenceManager->persistAll();
+            }
         } elseif ($createNodeType) {
             if ($createCondition) {
                 $conditionResult = $this->expressionService->evaluateExpression($createCondition, $context);
@@ -200,6 +204,7 @@ class CsvCommandController extends CommandController
                     $this->update($nodeTemplate, $context, $propertyMap);
                 }
                 $node = $parent->createNodeFromTemplate($nodeTemplate);
+                $this->persistenceManager->persistAll();
             } else {
                 if ($verbose) {
                     $this->outputLine(sprintf('- cannot create nodetype %s from row %s beause of missing parent node', $createNodeType, implode(',', $context['row'])));
@@ -222,18 +227,24 @@ class CsvCommandController extends CommandController
     }
 
     /**
-     * Evaluate property map and set the properties
+     * Evaluate property map and set the properties and return wether anything has changed
      *
      * @param NodeInterface|NodeTemplate $node
      * @param $context
      * @param $propertyMap
+     * @return boolean return wether a property was changed
      */
     protected function update($node, $context, $propertyMap)
     {
+        $persistenceNeeded = false;
         foreach ($propertyMap as $propertyName => $expression) {
             $value = $this->expressionService->evaluateExpression($expression, $context);
+            if ($node->getProperty($propertyName) !== $value) {
                 $node->setProperty($propertyName, $value);
+                $persistenceNeeded = true;
+            }
         }
+        return $persistenceNeeded;
     }
 
     /**
