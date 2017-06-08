@@ -58,6 +58,12 @@ class CsvCommandController extends CommandController
 
     /**
      * @Flow\Inject
+     * @var PersistenceManagerInterface
+     */
+    protected $persistenceManager;
+
+    /**
+     * @Flow\Inject
      * @var NodeTypeManager
      */
     protected $nodeTypeManager;
@@ -90,8 +96,9 @@ class CsvCommandController extends CommandController
      * @param string $preset Preset-name
      * @param string $file File-name
      * @param string $siteNode SiteNode-name
+     * @param boolean $verbose Show informations during process
      */
-    public function importCommand($preset, $file, $siteNode = null)
+    public function importCommand($preset, $file, $siteNode = null, $verbose = false)
     {
 
         if ($this->importConfigurations
@@ -127,13 +134,18 @@ class CsvCommandController extends CommandController
             // map data to keys
             $row = array_combine($fieldNames, $data);
             $context = ['site' => $siteNode, 'row' => $row];
-            $this->import($context, $configuration);
+            $this->import($context, $configuration, $verbose);
         }
         fclose($handle);
     }
 
 
-    protected function import($context, $configuration)
+    /**
+     * @param array $context
+     * @param array $configuration
+     * @param bool $verbose
+     */
+    protected function import($context, $configuration, $verbose = false)
     {
         $updateNodeQuery = Arrays::getValueByPath($configuration, 'update.node');
 
@@ -158,11 +170,17 @@ class CsvCommandController extends CommandController
         }
 
         if ($node instanceof NodeInterface) {
+            if ($verbose) {
+                $this->outputLine(sprintf('- update node of type %s at path %s ', $node->getNodeType()->getName(), $node->getPath()));
+            }
             $this->update($node, $context, $propertyMap);
         } elseif ($createNodeType) {
             if ($createCondition) {
                 $conditionResult = $this->expressionService->evaluateExpression($createCondition, $context);
                 if (!$conditionResult) {
+                    if ($verbose) {
+                        $this->outputLine(sprintf('- skip creation nodetype %s from row %s beause of confition %s', $createNodeType, implode(',', $context['row']), $createCondition));
+                    }
                     return;
                 }
             }
@@ -170,6 +188,9 @@ class CsvCommandController extends CommandController
             $parent = $this->expressionService->evaluateExpression($createParentQuery, $context);
 
             if ($parent && $parent instanceof NodeInterface) {
+                if ($verbose) {
+                    $this->outputLine(sprintf('- create node of type %s below node %s', $createNodeType, $parent->getPath()));
+                }
                 $nodeTemplate = new NodeTemplate();
                 $nodeTemplate->setNodeType($nodeType);
                 if ($createPropertyMap) {
@@ -179,6 +200,10 @@ class CsvCommandController extends CommandController
                     $this->update($nodeTemplate, $context, $propertyMap);
                 }
                 $node = $parent->createNodeFromTemplate($nodeTemplate);
+            } else {
+                if ($verbose) {
+                    $this->outputLine(sprintf('- cannot create nodetype %s from row %s beause of missing parent node', $createNodeType, implode(',', $context['row'])));
+                }
             }
         }
 
@@ -188,7 +213,8 @@ class CsvCommandController extends CommandController
                 foreach ($descendantImportConfigurations as $key => $descendentImportConfiguration) {
                     $this->import(
                         Arrays::arrayMergeRecursiveOverrule($context, ['ancestor' => $node]),
-                        $descendentImportConfiguration
+                        $descendentImportConfiguration,
+                        $verbose
                     );
                 }
             }
@@ -206,7 +232,7 @@ class CsvCommandController extends CommandController
     {
         foreach ($propertyMap as $propertyName => $expression) {
             $value = $this->expressionService->evaluateExpression($expression, $context);
-            $node->setProperty($propertyName, $value);
+                $node->setProperty($propertyName, $value);
         }
     }
 
