@@ -113,17 +113,21 @@ Sitegeist:
         # optional: Description for the preset
         description: "Example-import description"
         
+        # optional Eel-values that are evaluates first and afterwards are available in the context 
+        context: 
+          base: ${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleCollection]').get(0)}
+        
         # optional: Configuration for importing previously imported nodes
         update: 
           # Expression that returns the node that shall be updated 
-          node: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNode][importIdentifier=\"' +  row['ID'] + '\"]').get(0)}"
+          node: "${q(base).find('[instanceof Sitegeist.CriticalMass:ExampleNode][importIdentifier=\"' +  row['ID'] + '\"]').get(0)}"
 
         # optional: Configuration for creating new nodes if no update was configured or no preexisting node is found
         create:
           # optional: skip import under certain conditions
           condition: "${row['ID'] ? true : false}"
           # Expression that returns the node that shall be updated 
-          parentNode: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection].get(0)}"   
+          parentNode: "${base}"   
           # The type of the node that shall be created
           type: 'Sitegeist.CriticalMass:ExampleNode'
           # optional:  The properties that are set once for new imported nodes  

@@ -131,10 +131,18 @@ class CsvCommandController extends CommandController
         $handle =  fopen($file, "r");
         $fieldNames = fgetcsv($fileHandle);
 
+        $baseContext = ['site' => $siteNode];
+        $contextProperties = Arrays::getValueByPath($configuration, 'context');
+        if ($contextProperties && is_array($contextProperties)) {
+            foreach ($contextProperties as $propertyName => $expression) {
+                $baseContext[$propertyName] = $this->expressionService->evaluateExpression($expression, $baseContext);
+            }
+        }
+
         while (($data = fgetcsv($fileHandle)) !== false) {
             // map data to keys
             $row = array_combine($fieldNames, $data);
-            $context = ['site' => $siteNode, 'row' => $row];
+            $context =  array_merge($baseContext, ['row' => $row]);
             $this->import($context, $configuration, $verbose);
         }
         fclose($handle);
