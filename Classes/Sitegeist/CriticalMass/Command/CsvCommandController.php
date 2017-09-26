@@ -183,7 +183,7 @@ class CsvCommandController extends CommandController
                 $conditionResult = $this->expressionService->evaluateExpression($createCondition, $context);
                 if (!$conditionResult) {
                     if ($verbose) {
-                        $this->outputLine(sprintf('- skip creation nodetype %s from row %s beause of confition %s', $createNodeType, implode(',', $context['row']), $createCondition));
+                        $this->outputLine(sprintf('- skip creation nodetype %s from row %s because of condition %s', $createNodeType, implode(',', $context['row']), $createCondition));
                     }
                     return;
                 }
@@ -207,7 +207,7 @@ class CsvCommandController extends CommandController
                 $this->persistenceManager->persistAll();
             } else {
                 if ($verbose) {
-                    $this->outputLine(sprintf('- cannot create nodetype %s from row %s beause of missing parent node', $createNodeType, implode(',', $context['row'])));
+                    $this->outputLine(sprintf('- cannot create nodetype %s from row %s because of missing parent node', $createNodeType, implode(',', $context['row'])));
                 }
             }
         }
