@@ -6,9 +6,10 @@ use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\Service\PublishingServiceInterface;
 use Neos\ContentRepository\Domain\Repository\WorkspaceRepository;
+use Neos\ContentRepository\Domain\Service\NodeServiceInterface;
 
-use Neos\ContentRepository\Utility as CrUtility;
 use Neos\Eel\FlowQuery\FlowQuery as FlowQuery;
+use Neos\Utility\Arrays;
 
 use Sitegeist\CriticalMass\Service\ExpressionService;
 use Sitegeist\CriticalMass\Service\NodeSortingService;
@@ -30,6 +31,12 @@ class ContentRepositoryHooks
      * @var PublishingServiceInterface
      */
     protected $publishingService;
+
+    /**
+     * @Flow\Inject
+     * @var NodeServiceInterface
+     */
+    protected $nodeService;
 
     /**
      * @Flow\Inject
@@ -114,7 +121,16 @@ class ContentRepositoryHooks
         $documentNode = (new FlowQuery(array($node)))->closest('[instanceof Neos.Neos:Document]')->get(0);
         $site = (new FlowQuery(array($node)))->parents('[instanceof Neos.Neos:Document]')->last()->get(0);
 
+        $baseContext = ['node' => $node, 'documentNode' => $documentNode, 'site' => $site];
         $expressionContext = ['node' => $node, 'documentNode' => $documentNode, 'site' => $site];
+
+        // evaluate context first
+        $contextProperties = Arrays::getValueByPath($configuration, 'context');
+        if ($contextProperties && is_array($contextProperties)) {
+            foreach ($contextProperties as $propertyName => $expression) {
+                $expressionContext[$propertyName] = $this->expressionService->evaluateExpression($expression, $baseContext);
+            }
+        }
 
         // check the condition first if one is defined
         if (array_key_exists('condition', $configuration) && $configuration['condition']) {
@@ -132,6 +148,8 @@ class ContentRepositoryHooks
             $configuration['root'],
             $expressionContext
         );
+
+        // handle path rules
         if ($collectionRoot && $collectionRoot instanceof NodeInterface) {
             $targetCollectionNode = $collectionRoot;
             $collectionPath = array($targetCollectionNode);
@@ -142,32 +160,21 @@ class ContentRepositoryHooks
                     $pathItemConfiguration['type'],
                     $expressionContext
                 );
-                $pathItemNameConfiguration = $this->expressionService->evaluateExpression(
-                    $pathItemConfiguration['name'],
-                    $expressionContext
-                );
 
-                $pathItemName = CrUtility::renderValidNodeName($pathItemNameConfiguration);
                 $pathItemNodeType = $this->nodeTypeManager->getNodeType($pathItemTypeConfiguration);
-
-                if (!$pathItemNodeType || !$pathItemName) {
+                if (!$pathItemNodeType) {
                     continue;
                 }
 
-                // find next path collectionNodes
-                $childNodes = $targetCollectionNode->getChildNodes();
-                $nextCollectionNode = null;
-                foreach ($childNodes as $childNode) {
-                    if ($childNode->getNodeType() == $pathItemNodeType
-                        && $childNode->getNodeData()->getName() == $pathItemName
-                    ) {
-                        $nextCollectionNode = $childNode;
-                    }
-                }
+                $nextCollectionNode = $this->expressionService->evaluateExpression(
+                    $pathItemConfiguration['node'],
+                    array_merge($expressionContext, ['parent' => $targetCollectionNode])
+                );
 
                 // create missing collectionNodes
                 if (!$nextCollectionNode) {
-                    $nextCollectionNode = $targetCollectionNode->createNode($pathItemName, $pathItemNodeType);
+                    $nextCollectionNodeName = $this->nodeService->generateUniqueNodeName($targetCollectionNode->getPath());
+                    $nextCollectionNode = $targetCollectionNode->createNode($nextCollectionNodeName, $pathItemNodeType);
                     if ($pathItemConfiguration['properties']) {
                         foreach ($pathItemConfiguration['properties'] as $propertyName => $propertyEelExpression) {
                             $propertyValue = $this->expressionService->evaluateExpression(

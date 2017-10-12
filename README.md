@@ -56,7 +56,13 @@ Sitegeist:
     
       # The configuration for the node type Sitegeist.CriticalMass:ExampleNode     
       'Sitegeist.CriticalMass:ExampleNode':
-      
+
+        # optional: Eel-values that are evaluates first and afterwards are available in the context 
+        # of the eel expressions below. During evaluation the `site`, `documentNode` and `node` values are present.
+        context: 
+          year: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
+          month: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+
         # Detect the root-collection node that will contain the automatically created node hierarchy
         root: "${q(node).parents().filter('[instanceof Sitegeist.CriticalMass:ExampleNodeCollection]').slice(-1, 1).get(0)}"
         
@@ -74,31 +80,38 @@ Sitegeist:
        
           # level 1 year
           -
-            # the type and nodename of the hierarchy-node  
+            # the type of the hierarchy-node  
             type: 'Sitegeist.CriticalMass:ExampleNodeCollection'
-            name: "${'node-event-year-' + (q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year')}"
+            
+            # eel-expression to find existing collection nodes
+            # the context contains the parent node as `parent` in addition to the default context values
+            node: "${q(parent).children('[uriPathSegment = '\' + year + ' '\]').get(0)}"
             
             # optional: the sorting of the nodes on this level
+            # the eel expression gets two nodes `a` and `b` in the context
             sortBy: '${q(a).property("title") < q(b).property("title")}'
              
             # properties that are applied only on node creation and can be edited afterwards
             properties:
-              title: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
-              uriPathSegment: "${q(node).property('startDate') ? Date.year(q(node).property('startDate')) : 'no-year'}"
+              title: "${year}"
+              uriPathSegment: "${year}"
           
           # level 2 month
           -
             # the type and nodename of the hierarchy-node  
             type: 'Sitegeist.CriticalMass:ExampleNodeCollection'
-            name: "${'node-event-month-' + (q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month')}"
+            # eel-expression to find existing collection nodes
+            # the context contains the parent node as `parent` in addition to the default context values
+            node: "${q(parent).children('[uriPathSegment = '\' + month + ' '\]').get(0)}"
             
             # optional: the sorting of the nodes on this level
+            # the eel expression gets two nodes `a` and `b` in the context
             sortBy: '${q(a).property("title") < q(b).property("title")}'
              
             # properties that are applied only on node creation and can be edited afterwards
             properties:
-              title: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
-              uriPathSegment: "${q(node).property('startDate') ? Date.month(q(node).property('startDate')) : 'no-month'}"
+              title: "${month}"
+              uriPathSegment: "${month}"
     
     #
     # Node-import
@@ -115,7 +128,7 @@ Sitegeist:
         
         # optional Eel-values that are evaluates first and afterwards are available in the context 
         context: 
-          base: ${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleCollection]').get(0)}
+          base: "${q(site).find('[instanceof Sitegeist.CriticalMass:ExampleCollection]').get(0)}"
         
         # optional: Configuration for importing previously imported nodes
         update: 
